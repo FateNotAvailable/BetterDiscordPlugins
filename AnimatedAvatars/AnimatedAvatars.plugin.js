@@ -3,6 +3,8 @@
  * @version 1.0.0
  * @description Do you want animated avatar but you dont want to buy intro? If yea, I got you covered, with this plugin you can replace avatar with gif or anything, and other people with this plugin can see it.
  * @author Fate#5785
+ * @website https://github.com/FateNotAvailable/BetterDiscordPlugins/blob/main/AnimatedAvatars/AnimatedAvatars.plugin.js
+ * @source https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/AnimatedAvatars/AnimatedAvatars.plugin.js
  */
 
 
@@ -26,7 +28,7 @@ function buildSetting(text, key, type, value, callback = () => {}) {
     input.addEventListener("change", () => {
         const newValue = type == "checkbox" ? input.checked : input.value;
         mySettings[key] = newValue;
-        BdApi.saveData("AnimatedPFP", "settings", mySettings);
+        BdApi.saveData("AnimatedAvatars", "settings", mySettings);
         callback(newValue);
     });
 
@@ -61,7 +63,7 @@ const getToken = () => {
 }
 
 const addCustomCSS = () => {
-    BdApi.injectCSS("AnimatedPFP", `
+    BdApi.injectCSS("AnimatedAvatars", `
     .animatePFP-settings-label {
         color: white;
         font-weight: 600;
@@ -199,9 +201,9 @@ const downloadDB = () => {
     });
 }
 
-module.exports = class AnimatedPFP {
+module.exports = class AnimatedAvatars {
     constructor(meta) {
-        Object.assign(mySettings, BdApi.loadData("AnimatedPFP", "settings"));
+        Object.assign(mySettings, BdApi.loadData("AnimatedAvatars", "settings"));
         downloadDB();
         updatePFPfromSettings();
         addCustomCSS();
