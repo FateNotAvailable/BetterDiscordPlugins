@@ -7,7 +7,7 @@
  * @source https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/BetterProfile/BetterProfile.plugin.js
  */
 
-let config = {
+const config = {
     name: "BetterProfile",
     version: "1.0.5",
     description: "Allows you to have animated avatar. Other people with this plugin can see it too.",
@@ -106,7 +106,7 @@ const addCustomCSS = () => {
 }
 
 const GETurlbuilder = (type, id) => {
-    let url = `${api}/get.php?id=${id}&key=${type}&version=${config.version}`;
+    let url = `${api}/get.php?id=${id}&key=${type}&do=redirect&version=${config.version}`;
     if (!mySettings.cache) return `${url}&lastmod=${Date.now()}`
     return url
 }
