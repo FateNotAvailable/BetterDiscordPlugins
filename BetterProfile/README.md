@@ -7,4 +7,4 @@
 - When you change avatar you need to reload (ctrl + r) better discord to see it
 
 [icon]: https://img.shields.io/badge/Download-BetterProfile-brightgreen
-[link]: https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/AnimatedAvatars/AnimatedAvatars.plugin.js
+[link]: https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/BetterProfile/BetterProfile.plugin.jss
