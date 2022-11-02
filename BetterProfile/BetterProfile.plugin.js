@@ -235,6 +235,7 @@ const replaceAllBorders = () => {
 
     let popouts = [
         ...document.querySelectorAll("*[class*='userPopout-']"),
+        ...document.querySelectorAll("*[class*='menu-']"),
     ];
 
     for (let i = 0; i < popouts.length; i++) {
@@ -263,6 +264,7 @@ const replaceAllBanners = () => {
 
     let popouts = [
         ...document.querySelectorAll("*[class*='userPopout-']"),
+        ...document.querySelectorAll("*[class*='menu-']"),
     ];
 
     for (let i = 0; i < popouts.length; i++) {
