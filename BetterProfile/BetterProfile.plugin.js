@@ -1,7 +1,7 @@
 /**
  * @name BetterProfile
  * @version 1.0.6
- * @description Allows you to have animated avatar. Other people with this plugin can see it too.
+ * @description Allows you to customize your profile more. Others with this plugin can see your profile too.
  * @author Fate
  * @website https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile
  * @source https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/BetterProfile/BetterProfile.plugin.js
@@ -10,7 +10,7 @@
 const config = {
     name: "BetterProfile",
     version: "1.0.6",
-    description: "Allows you to have animated avatar. Other people with this plugin can see it too.",
+    description: "Allows you to customize your profile more. Others with this plugin can see your profile too.",
     author: "Fate",
     website: "https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile",
     source: "https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/BetterProfile/BetterProfile.plugin.js"
