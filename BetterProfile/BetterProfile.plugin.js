@@ -1,19 +1,21 @@
 /**
  * @name BetterProfile
- * @version 1.0.6
+ * @version 1.0.7
  * @description Allows you to customize your profile more. Others with this plugin can see your profile too.
  * @author Fate
  * @website https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile
  * @source https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/BetterProfile/BetterProfile.plugin.js
+ * @updateUrl https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/BetterProfile/BetterProfile.plugin.js
  */
 
 const config = {
     name: "BetterProfile",
-    version: "1.0.6",
+    version: "1.0.7",
     description: "Allows you to customize your profile more. Others with this plugin can see your profile too.",
     author: "Fate",
     website: "https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile",
-    source: "https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/BetterProfile/BetterProfile.plugin.js"
+    source: "https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/BetterProfile/BetterProfile.plugin.js",
+    updateUrl: this.source
 }
 
 const api = "https://DB.parrotdevelopers.repl.co";
@@ -270,34 +272,54 @@ const replaceAllBanners = () => {
     for (let i = 0; i < popouts.length; i++) {
         let popout = popouts[i];
         
-        const avatar = popout.getElementsByTagName("img")[0];
+        const avatar = popout.querySelectorAll("*[class*='avatar-']")[0];
         let banner = popout.querySelectorAll("*[class*='banner-']");
+        
         if (banner.length == 0) continue
         banner = banner[0];
-        console.log(banner);
 
+        
         // Get user id from avatar
         let id = "";
         if (avatar.src.includes("get.php?id=")) id = avatar.src.split("get.php?id=")[1]
         else if (avatar.src.includes("/avatars/")) id = avatar.src.split("/avatars/")[1].split("/")[0]
         else id = localUID
+        
+        // Discord autoreplaces this with original, so made this to fuck the discord's one
+        let avatarWrapperNormal = popout.querySelectorAll("*[class*='avatarWrapperNormal-']")[0]
+        if (id == localUID && mySettings.banner || up && bannerDB.includes(id)) {
+            if (!avatarWrapperNormal.classList.contains("avatarPositionPremium-1zPBq9")) {
+                avatarWrapperNormal.classList.add("avatarPositionPremium-1zPBq9");
+            }
+        }
+        
+        if (banner.tagName.toLowerCase() == "img") continue
 
-
-        // If id is local user and user has set avatar url, use link directly from settings
+        // Replace the div with an image
+        let img = document.createElement("img");
+        img.className = banner.className;
+        img.style.height = "120px";
+        
+        //document.querySelectorAll("*[class*='avatarWrapperNormal-']")[0].style.setProperty('top', '76px', 'important');
         if (id == localUID && mySettings.banner) {
-            if (mySettings.cache) banner.style.background = `url(${proxy}${urlencode(mySettings.banner)}) center no-repeat`;
-            else banner.style.background = `url(${proxy}${urlencode(mySettings.banner)}&lastmod=${Date.now()}) center no-repeat`;
+           if (mySettings.cache) img.src = proxy+urlencode(mySettings.banner);
+           else img.src = `${proxy}${urlencode(mySettings.banner)}&lastmod=${Date.now()}`;
+        }
+        else if (up && bannerDB.includes(id)) {
+            img.src = GETurlbuilder("banner", id);
+        }
+        else {
             continue
         }
 
-        // If server is down we dont need to replace image cuz local user's one was already replaced above
-        if (!up) continue
+        let bannerSVGWrapper = popout.querySelectorAll("*[class*='bannerSVGWrapper-']")[0];
+        bannerSVGWrapper.getElementsByTagName("foreignObject")[0].removeAttribute("mask");
+        bannerSVGWrapper.setAttribute("viewBox", "0 0 300 120");
+        bannerSVGWrapper.style.minHeight = "120px";
 
-        // Check DB
-        if (!bannerDB.includes(id)) continue
+        
 
-        // Set IMG
-        banner.style.background = `url(${GETurlbuilder("banner", id)}) center no-repeat`;
+        banner.parentNode.replaceChild(img, banner);
     }
 
 }
@@ -416,6 +438,5 @@ module.exports = class BetterProfile {
         })
         return mySettingsPanel;
     }
-    
 }
 
