@@ -1,6 +1,6 @@
 /**
  * @name BetterProfile
- * @version 1.1.0
+ * @version 1.1.1
  * @description Allows you to customize your profile more. Others with this plugin can see your profile too.
  * @author Fate
  * @website https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile
@@ -11,7 +11,7 @@
 
 const config = {
     name: "BetterProfile",
-    version: "1.1.0",
+    version: "1.1.1",
     description: "Allows you to customize your profile more. Others with this plugin can see your profile too.",
     author: "Fate",
     website: "https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile",
@@ -152,7 +152,7 @@ const replaceAllAvatars = () => {
         if (!img.src.includes("/avatars/")) continue
         
         // check if img was already replaced
-        if (img.src.includes("get.php?id=")) continue
+        //if (img.src.includes(proxy)) continue
 
         // Get user id from avatar
         const id = img.src.split("/avatars/")[1].split("/")[0];
@@ -161,10 +161,10 @@ const replaceAllAvatars = () => {
         img.dataset.original = img.src;
 
         // Add onerror event listeners so if url is broken, u will see normal discord one
-        img.addEventListener('error', function(e) {
-            e.path[0].src = e.path[0].dataset.original;
-            up = false;
-        }.bind(this), false);
+        //img.addEventListener('error', function(e) {
+        //    e.path[0].src = e.path[0].dataset.original;
+        //    up = false;
+        //}.bind(this), false);
 
         // If id is local user and user has set avatar url, use link directly from settings
         if (id == localUID && mySettings.avatar) {
@@ -191,7 +191,7 @@ const replaceAllAvatars = () => {
         if (!userAvatar.style.backgroundImage.includes("/avatars/")) continue
         
         // check if img was already replaced
-        if (userAvatar.style.backgroundImage.includes("get.php?id=")) continue
+        //if (userAvatar.style.backgroundImage.includes(proxy)) continue
         
         // Get user id from avatar
         const id = userAvatar.style.backgroundImage.split("/avatars/")[1].split("/")[0];
@@ -200,10 +200,10 @@ const replaceAllAvatars = () => {
         userAvatar.dataset.original = userAvatar.style.backgroundImage;
 
         // Add onerror event listeners so if url is broken, u will see normal discord one
-        userAvatar.addEventListener('error', function(e) {
-            e.path[0].style.backgroundImage = e.path[0].dataset.original;
-            up = false;
-        }.bind(this), false);
+        //userAvatar.addEventListener('error', function(e) {
+        //    e.path[0].style.backgroundImage = e.path[0].dataset.original;
+        //    up = false;
+        //}.bind(this), false);
 
         // If id is local user and user has set avatar url, use link directly from settings
         if (id == localUID && mySettings.avatar) {
@@ -242,6 +242,7 @@ const replaceAllBorders = () => {
         let id = "";
         if (avatar.src.includes("get.php?id=")) id = avatar.src.split("get.php?id=")[1]
         else if (avatar.src.includes("/avatars/")) id = avatar.src.split("/avatars/")[1].split("/")[0]
+        else if (avatar.dataset.original.includes("/avatars/")) id = avatar.dataset.original.split("/avatars/")[1].split("/")[0]
         else id = localUID
 
         if (!db.hasOwnProperty(id) || !db[id].hasOwnProperty("border") || !db[id]["border"]) continue
@@ -282,8 +283,9 @@ const replaceAllBanners = () => {
         let id = "";
         if (avatar.src.includes("get.php?id=")) id = avatar.src.split("get.php?id=")[1]
         else if (avatar.src.includes("/avatars/")) id = avatar.src.split("/avatars/")[1].split("/")[0]
+        else if (avatar.dataset.original.includes("/avatars/")) id = avatar.dataset.original.split("/avatars/")[1].split("/")[0]
         else id = localUID
-        
+        console.log(avatar.src)
         // Discord autoreplaces this with original, so made this to fuck the discord's one
         let avatarWrapperNormal = popout.querySelectorAll("*[class*='avatarWrapperNormal-']")[0];
         if (id == localUID && mySettings.banner || up && db.hasOwnProperty(id) && db[id].hasOwnProperty("banner")) {
