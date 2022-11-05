@@ -1,6 +1,6 @@
 /**
  * @name BetterProfile
- * @version 1.0.7
+ * @version 1.0.9
  * @description Allows you to customize your profile more. Others with this plugin can see your profile too.
  * @author Fate
  * @website https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile
@@ -10,7 +10,7 @@
 
 const config = {
     name: "BetterProfile",
-    version: "1.0.7",
+    version: "1.0.9",
     description: "Allows you to customize your profile more. Others with this plugin can see your profile too.",
     author: "Fate",
     website: "https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile",
@@ -20,15 +20,12 @@ const config = {
 
 const api = "https://DB.parrotdevelopers.repl.co";
 const proxy = "https://corsproxy.io/?";
-let avatarDB = "";
-let borderDB = "";
-let bannerDB = "";
-
+var db = "";
 let up = true;
 
 // Default settings
 let mySettings = {
-    avatarURL: "",
+    avatar: "",
     banner: "",
     border: false,
     cache:false,
@@ -133,14 +130,8 @@ const addCustomCSS = () => {
     `);
 }
 
-const GETurlbuilder = (type, id) => {
-    let url = `${api}/get.php?id=${id}&key=${type}&do=redirect&version=${config.version}`;
-    if (!mySettings.cache) return `${url}&lastmod=${Date.now()}`
-    return url
-}
-
 const replaceAllAvatars = () => {
-    if (!avatarDB && !mySettings.avatarURL) return
+    if (!db) return // TODO: Add checker if specific key exists
     let imgs = document.getElementsByTagName("img");
     const localUID = getUID();
 
@@ -175,20 +166,20 @@ const replaceAllAvatars = () => {
         }.bind(this), false);
 
         // If id is local user and user has set avatar url, use link directly from settings
-        if (id == localUID && mySettings.avatarURL) {
-            if (mySettings.cache) img.src = `${proxy}${urlencode(mySettings.avatarURL)}`;
-            else img.src = `${proxy}${urlencode(mySettings.avatarURL)}&lastmod=${Date.now()}`;
+        if (id == localUID && mySettings.avatar) {
+            if (mySettings.cache) img.src = `${proxy}${urlencode(mySettings.avatar)}`;
+            else img.src = `${proxy}${urlencode(mySettings.avatar)}&lastmod=${Date.now()}`;
             continue
         }
 
         // If server is down we dont need to replace image cuz local user's one was already replaced above
         if (!up) continue
 
-        // Check DB
-        if (!avatarDB.includes(id)) continue
-
-        // Set IMG
-        img.src = GETurlbuilder("avatar", id);
+        if (db.hasOwnProperty(id) && db[id].hasOwnProperty("avatar")) {
+            if (mySettings.cache) img.src = proxy + urlencode(db[id]['avatar']);
+            else img.src = `${proxy}${urlencode(db[id]['avatar'])}&lastmod=${Date.now()}`;
+        }
+        
     }
 
     // Replace avatars in voice chat
@@ -214,25 +205,26 @@ const replaceAllAvatars = () => {
         }.bind(this), false);
 
         // If id is local user and user has set avatar url, use link directly from settings
-        if (id == localUID && mySettings.avatarURL) {
-            if (mySettings.cache) userAvatar.style.backgroundImage = `url(${proxy}${urlencode(mySettings.avatarURL)})`;
-            else userAvatar.style.backgroundImage = `url(${proxy}${urlencode(mySettings.avatarURL)}&lastmod=${Date.now()})`;
+        if (id == localUID && mySettings.avatar) {
+            if (mySettings.cache) userAvatar.style.backgroundImage = `url(${proxy}${urlencode(mySettings.avatar)})`;
+            else userAvatar.style.backgroundImage = `url(${proxy}${urlencode(mySettings.avatar)}&lastmod=${Date.now()})`;
             continue
         }
         
         // If server is down we dont need to replace image cuz local user's one was already replaced above
         if (!up) continue
 
-        // Check DB
-        if (!avatarDB.includes(id)) continue
-        
-        // Set IMG
-        userAvatar.style.backgroundImage = `url(${GETurlbuilder("avatar", id)})`;
+        if (db.hasOwnProperty(id) && db[id].hasOwnProperty("avatar")) {
+            userAvatar.style.backgroundImage = `url(${proxy}${db[id]['avatar']})`;
+
+            if (mySettings.cache) userAvatar.style.backgroundImage = `url(${proxy}${urlencode(db[id]['avatar'])})`;
+            else userAvatar.style.backgroundImage = `url(${proxy}${urlencode(db[id]['avatar'])}&lastmod=${Date.now()})`;
+        }
     }
 }
 
 const replaceAllBorders = () => {
-    if (!borderDB && !mySettings.border) return
+    if (!db) return // TODO: Add checker if specific key exists
     const localUID = getUID();
 
     let popouts = [
@@ -252,16 +244,15 @@ const replaceAllBorders = () => {
         else id = localUID
 
         // Check DB
-        if (!borderDB.includes(id)) continue
-
-        // Set IMG
-        popout.style.animation = "colorRotate 6s linear 0s infinite";
+        if (db.hasOwnProperty(id) && db[id].hasOwnProperty("border") && db[id]["border"].toString() == "true") {
+            popout.style.animation = "colorRotate 6s linear 0s infinite";
+        }
     }
 
 }
 
 const replaceAllBanners = () => {
-    if (!bannerDB && !mySettings.bannerURL) return
+    if (!db) return // TODO: Add checker if specific key exists
     const localUID = getUID();
 
     let popouts = [
@@ -286,10 +277,10 @@ const replaceAllBanners = () => {
         else id = localUID
         
         // Discord autoreplaces this with original, so made this to fuck the discord's one
-        let avatarWrapperNormal = popout.querySelectorAll("*[class*='avatarWrapperNormal-']")[0]
-        if (id == localUID && mySettings.banner || up && bannerDB.includes(id)) {
-            if (!avatarWrapperNormal.classList.contains("avatarPositionPremium-1zPBq9")) {
-                avatarWrapperNormal.classList.add("avatarPositionPremium-1zPBq9");
+        let avatarWrapperNormal = popout.querySelectorAll("*[class*='avatarWrapperNormal-']")[0];
+        if (id == localUID && mySettings.banner || up && db.hasOwnProperty(id) && db[id].hasOwnProperty("banner")) {
+            if (avatarWrapperNormal.style.top != "76px") {
+                avatarWrapperNormal.style.setProperty('top', '76px', 'important');
             }
         }
         
@@ -300,13 +291,13 @@ const replaceAllBanners = () => {
         img.className = banner.className;
         img.style.height = "120px";
         
-        //document.querySelectorAll("*[class*='avatarWrapperNormal-']")[0].style.setProperty('top', '76px', 'important');
         if (id == localUID && mySettings.banner) {
            if (mySettings.cache) img.src = proxy+urlencode(mySettings.banner);
            else img.src = `${proxy}${urlencode(mySettings.banner)}&lastmod=${Date.now()}`;
         }
-        else if (up && bannerDB.includes(id)) {
-            img.src = GETurlbuilder("banner", id);
+        else if (up && db.hasOwnProperty(id) && db[id].hasOwnProperty("banner")) {
+            if (mySettings.cache) img.src = proxy + urlencode(db[id]['banner']);
+            else img.src = `${proxy}${urlencode(db[id]['banner'])}&lastmod=${Date.now()}`;
         }
         else {
             continue
@@ -338,7 +329,7 @@ const updateAvatarfromSettings = () => {
     updateItem(
         "avatar",
         getUID(),
-        mySettings.avatarURL,
+        mySettings.avatar,
         "none" // Fuck verification.
     )
 }
@@ -363,21 +354,9 @@ const updateBannerfromSettings = () => {
 
 const downloadDB = () => {
     console.log("Updating Database");
-    require("request").get(`${api}/getByKey.php?key=avatar&version=${config.version}`, (e, r, b) => {
-        avatarDB = b;
-        BdApi.saveData(config.name, "avatarDB", b);
-        up = true;
-    });
-
-    require("request").get(`${api}/getByKey.php?key=border&version=${config.version}`, (e, r, b) => {
-        borderDB = b;
-        BdApi.saveData(config.name, "borderDB", b);
-        up = true;
-    });
-
-    require("request").get(`${api}/getByKey.php?key=banner&version=${config.version}`, (e, r, b) => {
-        bannerDB = b;
-        BdApi.saveData(config.name, "bannerDB", b);
+    require("request").get(`${api}/db.php?version=${config.version}`, (e, r, b) => {
+        db = JSON.parse(b);
+        BdApi.saveData(config.name, "DB", db);
         up = true;
     });
 }
@@ -394,12 +373,8 @@ module.exports = class BetterProfile {
 
     start() {
         Object.assign(mySettings, BdApi.loadData(config.name, "settings"));
-        avatarDB = BdApi.loadData(config.name, "avatarDB");
-        bannerDB = BdApi.loadData(config.name, "bannerDB");
-        borderDB = BdApi.loadData(config.name, "borderDB");
-        if (!avatarDB) avatarDB = "";
-        if (!bannerDB) bannerDB = "";
-        if (!borderDB) borderDB = "";
+        db = BdApi.loadData(config.name, "DB");
+        if (!db) db = "";
 
         downloadDB();
         updateAvatarfromSettings();
@@ -411,6 +386,9 @@ module.exports = class BetterProfile {
         window.addEventListener("DOMNodeInserted", this.mainListener);
 
         this.downloadDBInterval = setInterval(function() {
+            updateAvatarfromSettings();
+            updateBannerfromSettings();
+            updateBorderfromSettings();
             downloadDB();
         }, 1* 60 * 1000); // 1 minute
     }
@@ -427,7 +405,7 @@ module.exports = class BetterProfile {
         mySettingsPanel.id = "animatepfp-settings";
 
         const options = [
-            buildSetting("Avatar: ", "avatarURL", "text", mySettings.avatarURL, updateAvatarfromSettings),
+            buildSetting("Avatar: ", "avatar", "text", mySettings.avatar, updateAvatarfromSettings),
             buildSetting("Banner: ", "banner", "text", mySettings.banner, updateBannerfromSettings),
             buildSetting("RGB Border: ", "border", "checkbox", mySettings.border, updateBorderfromSettings),
             buildSetting("Cache: ", "cache", "checkbox", mySettings.cache, replaceAllAvatars),
