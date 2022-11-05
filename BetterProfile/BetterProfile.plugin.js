@@ -285,7 +285,7 @@ const replaceAllBanners = () => {
         else if (avatar.src.includes("/avatars/")) id = avatar.src.split("/avatars/")[1].split("/")[0]
         else if (avatar.dataset.original.includes("/avatars/")) id = avatar.dataset.original.split("/avatars/")[1].split("/")[0]
         else id = localUID
-        console.log(avatar.src)
+
         // Discord autoreplaces this with original, so made this to fuck the discord's one
         let avatarWrapperNormal = popout.querySelectorAll("*[class*='avatarWrapperNormal-']")[0];
         if (id == localUID && mySettings.banner || up && db.hasOwnProperty(id) && db[id].hasOwnProperty("banner")) {
