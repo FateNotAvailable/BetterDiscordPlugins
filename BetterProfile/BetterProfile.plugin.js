@@ -1,6 +1,6 @@
 /**
  * @name BetterProfile
- * @version 1.0.9
+ * @version 1.1.0
  * @description Allows you to customize your profile more. Others with this plugin can see your profile too.
  * @author Fate
  * @website https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile
@@ -8,9 +8,10 @@
  * @updateUrl https://raw.githubusercontent.com/FateNotAvailable/BetterDiscordPlugins/main/BetterProfile/BetterProfile.plugin.js
  */
 
+
 const config = {
     name: "BetterProfile",
-    version: "1.0.9",
+    version: "1.1.0",
     description: "Allows you to customize your profile more. Others with this plugin can see your profile too.",
     author: "Fate",
     website: "https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile",
@@ -110,7 +111,7 @@ const addCustomCSS = () => {
         margin-left: 6%;
     }
 
-    @keyframes colorRotate {
+    @keyframes RGB {
         from {
           border: var(--animatedPFP-border-size) solid #6666ff;
         }
@@ -243,10 +244,17 @@ const replaceAllBorders = () => {
         else if (avatar.src.includes("/avatars/")) id = avatar.src.split("/avatars/")[1].split("/")[0]
         else id = localUID
 
+        if (!db.hasOwnProperty(id) || !db[id].hasOwnProperty("border") || !db[id]["border"]) continue
+        console.log(db[id]["border"]);
         // Check DB
-        if (db.hasOwnProperty(id) && db[id].hasOwnProperty("border") && db[id]["border"].toString() == "true") {
-            popout.style.animation = "colorRotate 6s linear 0s infinite";
+        if (db[id]["border"] == "RGB") {
+            popout.style.animation = "RGB 6s linear 0s infinite";
+            popout.style.border = "";
+            continue;
         }
+
+        popout.style.border = `2px solid ${db[id]["border"]}`;
+        popout.style.animation = "";
     }
 
 }
@@ -407,7 +415,7 @@ module.exports = class BetterProfile {
         const options = [
             buildSetting("Avatar: ", "avatar", "text", mySettings.avatar, updateAvatarfromSettings),
             buildSetting("Banner: ", "banner", "text", mySettings.banner, updateBannerfromSettings),
-            buildSetting("RGB Border: ", "border", "checkbox", mySettings.border, updateBorderfromSettings),
+            buildSetting("Border: ", "border", "text", mySettings.border, updateBorderfromSettings),
             buildSetting("Cache: ", "cache", "checkbox", mySettings.cache, replaceAllAvatars),
         ]
 
