@@ -1,6 +1,6 @@
 /**
     * @name BetterProfile
-    * @version 2.0.0
+    * @version 2.5.0
     * @description Allows you to customize your profile more. Others with this plugin can see your profile too.
     * @author Fate
     * @website https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile
@@ -9,7 +9,7 @@
 */
 const config = {
     name: "BetterProfile",
-    version: "2.0.0",
+    version: "2.5.0",
     description: "Allows you to customize your profile more. Others with this plugin can see your profile too.",
     author: "Fate",
     website: "https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile",
@@ -231,9 +231,60 @@ const replaceAllThemes = (mySettings) => {
     }
 };
 
+const parseBadges = (data) => {
+    return JSON.parse(data);
+};
+const createBadge = (name, img, imgClass) => {
+    let div = document.createElement("div");
+    div.setAttribute("aria-label", name);
+    div.setAttribute("role", 'button');
+    div.setAttribute("tabindex", "0");
+    div.innerHTML = `<img alt=" " aria-hidden="true" src="${config.proxy}${urlencode(img)}" class="${imgClass}">`;
+    return div
+};
+const replaceAllBadges = (mySettings) => {
+    const db = DB();
+    if (!db) return
+    const localUID = getUID();
+    let popouts = [
+        ...document.querySelectorAll("*[class*='userPopoutInner-']"),
+    ];
+    for (let i = 0; i < popouts.length; i++) {
+        let popout = popouts[i];
+        const avatar = popout.querySelectorAll("*[class*='avatar-']")[0];
+        let id = "";
+        if (avatar.src.includes("get.php?id=")) id = avatar.src.split("get.php?id=")[1];
+        else if (avatar.src.includes("/avatars/")) id = avatar.src.split("/avatars/")[1].split("/")[0];
+        else if (avatar.dataset.original.includes("/avatars/")) id = avatar.dataset.original.split("/avatars/")[1].split("/")[0];
+        else id = localUID;
+        if (db.hasOwnProperty(id) && db[id].hasOwnProperty("avatar")&& db[id]["badges"] != "") {
+            let badgesList = document.querySelectorAll("*[class*='profileBadges-']")[0];
+            if (badgesList.dataset.BPpatched == "true") continue
+            badgesList.dataset.BPpatched = "true";
+            if (db.hasOwnProperty(id) && db[id].hasOwnProperty("hideOriginalBadges")&& db[id]["hideOriginalBadges"] == "true") {
+                badgesList.innerHTML = "";
+            } else if (mySettings.hideOriginalBadges.toString() == "true") {
+                badgesList.innerHTML = "";
+            }
+            let parsed;
+            if (id == localUID) parsed = parseBadges(mySettings.badges);
+            else parsed = parseBadges(db[id]["badges"]);
+            parsed.forEach(item => {
+                badgesList.appendChild(createBadge(
+                    item.name,
+                    item.img,
+                    "profileBadge22-3OAigE profileBadge-2YySEb desaturate-_Twf3u"
+                ));
+            });
+        }
+    }
+};
+
 let mySettings = {
     avatar: "",
     banner: "",
+    badges: "",
+    hideOriginalBadges: false,
     themePrimary: "",
     themeSecondary: "",
     themeBGC: "",
@@ -276,6 +327,21 @@ const updateBannerfromSettings = () => {
     );
     replaceAllBanners(mySettings);
 };
+const updateBadgesfromSettings = () => {
+    updateItem(
+        "badges",
+        getUID(),
+        mySettings.badges,
+        "none"
+    );
+    updateItem(
+        "hideOriginalBadges",
+        getUID(),
+        mySettings.hideOriginalBadges,
+        "none"
+    );
+    replaceAllBanners(mySettings);
+};
 const updateThemefromSettings = () => {
     updateItem(
         "themePrimary",
@@ -311,6 +377,7 @@ module.exports = class BetterProfile {
             replaceAllAvatars(mySettings);
             replaceAllBanners(mySettings);
             replaceAllThemes(mySettings);
+            replaceAllBadges(mySettings);
         };
     }
     start() {
@@ -319,12 +386,14 @@ module.exports = class BetterProfile {
         updateAvatarfromSettings();
         updateBannerfromSettings();
         updateThemefromSettings();
+        updateBadgesfromSettings();
         addCustomCSS();
         window.addEventListener("DOMNodeInserted", this.mainListener);
         this.mainInterval = setInterval(function() {
             updateAvatarfromSettings();
             updateBannerfromSettings();
             updateThemefromSettings();
+            updateBadgesfromSettings();
             updateDB();
         }, 1* 60 * 1000);
     }
@@ -338,6 +407,8 @@ module.exports = class BetterProfile {
         const options = [
             buildSetting("Avatar: ", "avatar", "text", mySettings.avatar, updateAvatarfromSettings),
             buildSetting("Banner: ", "banner", "text", mySettings.banner, updateBannerfromSettings),
+            buildSetting("Badges: ", "badges", "text", mySettings.badges, updateBadgesfromSettings),
+            buildSetting("Hide Original Badges: ", "hideOriginalBadges", "checkbox", mySettings.hideOriginalBadges, updateBadgesfromSettings),
             buildSetting("T-Primary: ", "themePrimary", "text", mySettings.themePrimary, updateThemefromSettings),
             buildSetting("T-Secondary: ", "themeSecondary", "text", mySettings.themeSecondary, updateThemefromSettings),
             buildSetting("T-BG Color: ", "themeBGC", "text", mySettings.themeBGC, updateThemefromSettings),
