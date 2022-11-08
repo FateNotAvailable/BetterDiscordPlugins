@@ -1,6 +1,6 @@
 /**
     * @name BetterProfile
-    * @version 2.5.0
+    * @version 2.5.1
     * @description Allows you to customize your profile more. Others with this plugin can see your profile too.
     * @author Fate
     * @website https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile
@@ -9,7 +9,7 @@
 */
 const config = {
     name: "BetterProfile",
-    version: "2.5.0",
+    version: "2.5.1",
     description: "Allows you to customize your profile more. Others with this plugin can see your profile too.",
     author: "Fate",
     website: "https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile",
@@ -63,19 +63,17 @@ const getUID = () => {
 
 const addCustomCSS = () => {
     BdApi.injectCSS(config.name, `
-    :root {
-        --animatedPFP---profile-gradient-primary-color-size: 2px;
-    }
-
-    .animatePFP-settings-label {
+    .BetterProfile-label {
         color: white;
         font-weight: 600;
     }
 
-    .animatePFP-settings-input-text {
-        background-color: #36393f;
-        --profile-gradient-primary-color: 3px solid #202225;
-        width: 70%;
+    .BetterProfile-input {
+        padding: 5px;
+        border-radius: 2px;
+        border: 0px;
+        background-color: #202225;
+        width: 200%;
         margin-left: 8%;
         color: white;
         text-align: center;
@@ -83,22 +81,69 @@ const addCustomCSS = () => {
         font-size: .95em;
     }
 
-    .animatePFP-settings-input-checkbox {
-        margin-left: 6%;
+    .BetterProfile-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+      
+    .BetterProfile-switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+      
+    .BetterProfile-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+      
+    .BetterProfile-slider:before {
+        position: absolute;
+        content: "";
+        height: 23px;
+        width: 23px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
     }
 
-
-
-    @keyframes rainbow_animation {
-        0%,100% {
-            background-position: 0 0;
-        }
+    .BetterProfile-checkbox:checked {
+        padding: 5px;
+    }
     
-        50% {
-            background-position: 100% 0;
-        }
+    .BetterProfile-checkbox:checked + .BetterProfile-slider {
+        background-color: #2196F3;
     }
+      
+    .BetterProfile-checkbox:focus + .BetterProfile-slider {
+        box-shadow: 0 0 1px #2196F3;
+    }
+      
+    .BetterProfile-checkbox:checked + .BetterProfile-slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+    }
+      
 
+    .BetterProfile-slider.BetterProfile-round {
+        border-radius: 34px;
+    }
+      
+    .BetterProfile-slider.BetterProfile-round:before {
+        border-radius: 50%;
+    }
     `);
 };
 
@@ -291,9 +336,8 @@ let mySettings = {
     themeOC: ""
 };
 function buildSetting(text, key, type, value, callback = () => {}) {
-    const setting = Object.assign(document.createElement("div"), {className: "setting"});
-    const label = Object.assign(document.createElement("span"), {textContent: text, className: "animatePFP-settings-label"});
-    const input = Object.assign(document.createElement("input"), {type: type, name: key, value: value});
+    const label = Object.assign(document.createElement("span"), {textContent: text, className: "BetterProfile-label"});
+    let input = Object.assign(document.createElement("input"), {type: type, name: key, value: value});
     if (type == "checkbox" && value) input.checked = true;
     input.addEventListener("change", () => {
         const newValue = type == "checkbox" ? input.checked : input.value;
@@ -302,12 +346,25 @@ function buildSetting(text, key, type, value, callback = () => {}) {
         callback(newValue);
     });
     if (type == "text") {
-        input.className = "animatePFP-settings-input-text";
+        input.className = "BetterProfile-input";
     } else {
-        input.className = "animatePFP-settings-input-checkbox";
+        input.className = "BetterProfile-checkbox";
+        const lb = document.createElement("label");
+        lb.className = "BetterProfile-switch";
+        const span = document.createElement("span");
+        span.className = "BetterProfile-slider BetterProfile-round";
+        lb.append(input);
+        lb.append(span);
+        input = lb;
     }
-    setting.append(label, input);
-    return setting;
+    const tr = document.createElement("tr");
+    const th1 = document.createElement("th");
+    const th2 = document.createElement("th");
+    th1.append(label);
+    th2.append(input);
+    tr.append(th1);
+    tr.append(th2);
+    return tr;
 }
 const updateAvatarfromSettings = () => {
     updateItem(
@@ -402,21 +459,23 @@ module.exports = class BetterProfile {
         clearInterval(this.mainInterval);
     }
     getSettingsPanel() {
-        const mySettingsPanel = document.createElement("div");
-        mySettingsPanel.id = "animatepfp-settings";
+        const mySettingsPanel = document.createElement("table");
         const options = [
             buildSetting("Avatar: ", "avatar", "text", mySettings.avatar, updateAvatarfromSettings),
             buildSetting("Banner: ", "banner", "text", mySettings.banner, updateBannerfromSettings),
             buildSetting("Badges: ", "badges", "text", mySettings.badges, updateBadgesfromSettings),
-            buildSetting("Hide Original Badges: ", "hideOriginalBadges", "checkbox", mySettings.hideOriginalBadges, updateBadgesfromSettings),
             buildSetting("T-Primary: ", "themePrimary", "text", mySettings.themePrimary, updateThemefromSettings),
             buildSetting("T-Secondary: ", "themeSecondary", "text", mySettings.themeSecondary, updateThemefromSettings),
             buildSetting("T-BG Color: ", "themeBGC", "text", mySettings.themeBGC, updateThemefromSettings),
             buildSetting("T-O Color: ", "themeOC", "text", mySettings.themeOC, updateThemefromSettings),
+            buildSetting("Hide Original Badges: ", "hideOriginalBadges", "checkbox", mySettings.hideOriginalBadges, updateBadgesfromSettings),
         ];
         options.forEach((item, index) => {
             mySettingsPanel.append(item);
         });
-        return mySettingsPanel;
+        const div = document.createElement("div");
+        div.id = "animatepfp-settings";
+        div.appendChild(mySettingsPanel);
+        return div;
     }
 };
