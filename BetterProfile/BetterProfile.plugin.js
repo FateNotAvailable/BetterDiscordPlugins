@@ -1,6 +1,6 @@
 /**
     * @name BetterProfile
-    * @version 2.5.1
+    * @version 2.6.0
     * @description Allows you to customize your profile more. Others with this plugin can see your profile too.
     * @author Fate
     * @website https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile
@@ -9,7 +9,7 @@
 */
 const config = {
     name: "BetterProfile",
-    version: "2.5.1",
+    version: "2.6.0",
     description: "Allows you to customize your profile more. Others with this plugin can see your profile too.",
     author: "Fate",
     website: "https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile",
@@ -39,26 +39,20 @@ const updateItem = (type, id, url, tkn) => {
 const urlencode = (str) => {
     return encodeURIComponent(str);
 };
-const getToken = () => {
-    return (
-        webpackChunkdiscord_app.push(
-            [
-                [''],
-                {},
-                e => {
-                    m=[];
-                    for(let c in e.c)
-                        m.push(e.c[c]);
-                }
-            ]
-        ),
-        m
-    ).find(
-        m => m?.exports?.default?.getToken !== void 0
-    ).exports.default.getToken()
+const grabUID = () => {
+    let userAvatar = document.querySelectorAll("*[class*='avatar-']")[0];
+    let img = userAvatar.getElementsByTagName("img")[0];
+    if (img.dataset.original) return img.dataset.original.split("/avatars/")[1].split("/")[0];
+    if (img.src.includes("/avatars/")) return img.src.original.split("/avatars/")[1].split("/")[0];
+    return ""
 };
 const getUID = () => {
-    return atob(getToken().split(".")[0]);
+    let id = BdApi.loadData(config.name, "uid");
+    if (!id) {
+        id = grabUID();
+        BdApi.saveData(config.name, "uid", id);
+    }
+    return id
 };
 
 const addCustomCSS = () => {
@@ -121,13 +115,13 @@ const addCustomCSS = () => {
     .BetterProfile-checkbox:checked {
         padding: 5px;
     }
-    
+
     .BetterProfile-checkbox:checked + .BetterProfile-slider {
-        background-color: #2196F3;
+        background-color: rgb(67, 181, 129);
     }
       
     .BetterProfile-checkbox:focus + .BetterProfile-slider {
-        box-shadow: 0 0 1px #2196F3;
+        box-shadow: 0 0 1px rgb(67, 181, 129);
     }
       
     .BetterProfile-checkbox:checked + .BetterProfile-slider:before {
@@ -438,6 +432,7 @@ module.exports = class BetterProfile {
         };
     }
     start() {
+        getUID();
         Object.assign(mySettings, BdApi.loadData(config.name, "settings"));
         updateDB();
         updateAvatarfromSettings();
@@ -453,10 +448,14 @@ module.exports = class BetterProfile {
             updateBadgesfromSettings();
             updateDB();
         }, 1* 60 * 1000);
+        this.UIDInterval = setInterval(function() {
+            getUID();
+        }, 500);
     }
     stop() {
         window.removeEventListener("DOMNodeInserted", this.mainListener);
         clearInterval(this.mainInterval);
+        clearInterval(this.UIDInterval);
     }
     getSettingsPanel() {
         const mySettingsPanel = document.createElement("table");
