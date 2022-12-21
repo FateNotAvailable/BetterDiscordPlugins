@@ -1,6 +1,6 @@
 /**
     * @name BetterProfile
-    * @version 2.6.0
+    * @version 2.7.0
     * @description Allows you to customize your profile more. Others with this plugin can see your profile too.
     * @author Fate
     * @website https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile
@@ -9,7 +9,7 @@
 */
 const config = {
     name: "BetterProfile",
-    version: "2.6.0",
+    version: "2.7.0",
     description: "Allows you to customize your profile more. Others with this plugin can see your profile too.",
     author: "Fate",
     website: "https://github.com/FateNotAvailable/BetterDiscordPlugins/tree/main/BetterProfile",
@@ -450,6 +450,10 @@ module.exports = class BetterProfile {
         }, 1* 60 * 1000);
         this.UIDInterval = setInterval(function() {
             getUID();
+            replaceAllAvatars(mySettings);
+            replaceAllBanners(mySettings);
+            replaceAllThemes(mySettings);
+            replaceAllBadges(mySettings);
         }, 500);
     }
     stop() {
